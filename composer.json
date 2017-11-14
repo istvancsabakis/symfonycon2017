@@ -8,6 +8,7 @@
   },
   "require": {
     "beberlei/assert": "^2.7",
-    "psr/simple-cache": "^1.0"
+    "psr/simple-cache": "^1.0",
+    "moneyphp/money": "^3.0"
   }
 }
