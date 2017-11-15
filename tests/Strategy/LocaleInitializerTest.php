@@ -2,11 +2,15 @@
 
 namespace Tests\Strategy;
 
+use Mediator\EventManager;
+use Monolog\Handler\StreamHandler;
+use Monolog\Logger;
 use Negotiation\LanguageNegotiator;
 use PHPUnit\Framework\TestCase;
 use Strategy\LocaleExtractor\AcceptLanguageHeaderLocaleExtractor;
 use Strategy\LocaleExtractor\QueryStringLocaleExtractor;
 use Strategy\LocaleInitializer;
+use Strategy\LocaleLoggerListener;
 use Symfony\Component\HttpFoundation\Request;
 
 class LocaleInitializerTest extends TestCase
@@ -21,10 +25,17 @@ class LocaleInitializerTest extends TestCase
         string $requestedLocale
     ): void {
 
+        $logger = new Logger('unit_test');
+        $logger->pushHandler(new StreamHandler(sys_get_temp_dir().'/test.log', Logger::INFO));
+
+        $eventManager = new EventManager();
+        $eventManager->listen('locale.changed', [new LocaleLoggerListener($logger), 'onLocaleChanged']);
+
         (new LocaleInitializer(
             new QueryStringLocaleExtractor('lang'),
             self::LOCALES,
-            'fr-FR'
+            'fr-FR',
+            $eventManager
         ))
             ->initialize(Request::create('/?lang='.$requestedLocale));
 
